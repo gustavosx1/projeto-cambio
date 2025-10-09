@@ -1,77 +1,90 @@
 import 'package:flutter/material.dart';
 
-class MyWidget extends StatefulWidget {
-  const MyWidget({super.key});
+class CurrencyBox extends StatelessWidget {
+  final TextEditingController amountController;
+  final List<String> currencies;
+  final String fromCurrency;
+  final String toCurrency;
+  final Function(String?) onFromCurrencyChanged;
+  final Function(String?) onToCurrencyChanged;
+  final Function() onSwap;
+  final Function(String) onAmountChanged;
 
-  @override
-  State<MyWidget> createState() => _MyWidgetState();
-}
-
-class _MyWidgetState extends State<MyWidget> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
+  const CurrencyBox({
+    Key? key,
+    required this.amountController,
+    required this.currencies,
+    required this.fromCurrency,
+    required this.toCurrency,
+    required this.onFromCurrencyChanged,
+    required this.onToCurrencyChanged,
+    required this.onSwap,
+    required this.onAmountChanged,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          // Campo Email
-          TextFormField(
-            controller: _emailController,
-            decoration: InputDecoration(
-              labelText: 'Email',
-              prefixIcon: Icon(Icons.email),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+    return Card(
+      elevation: 4,
+      child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: amountController,
+              decoration: InputDecoration(
+                labelText: 'Valor a converter',
+                prefixIcon: Icon(Icons.attach_money),
+                border: OutlineInputBorder(),
               ),
-              filled: true,
-              fillColor: Colors.white,
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              onChanged: onAmountChanged,
             ),
-            keyboardType: TextInputType.emailAddress,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Por favor, digite seu email';
-              }
-              if (!value.contains('@')) {
-                return 'Email inválido';
-              }
-              return null;
-            },
-          ),
-          SizedBox(height: 20),
-
-          // Campo Senha
-          TextFormField(
-            controller: _passwordController,
-            decoration: InputDecoration(
-              labelText: 'Senha',
-              prefixIcon: Icon(Icons.lock),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              filled: true,
-              fillColor: Colors.white,
+            SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: fromCurrency,
+                    items: currencies.map((String currency) {
+                      return DropdownMenuItem<String>(
+                        value: currency,
+                        child: Text(currency),
+                      );
+                    }).toList(),
+                    onChanged: onFromCurrencyChanged,
+                    decoration: InputDecoration(
+                      labelText: 'De',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10),
+                IconButton(
+                  icon: Icon(Icons.swap_horiz),
+                  onPressed: onSwap,
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: toCurrency,
+                    items: currencies.map((String currency) {
+                      return DropdownMenuItem<String>(
+                        value: currency,
+                        child: Text(currency),
+                      );
+                    }).toList(),
+                    onChanged: onToCurrencyChanged,
+                    decoration: InputDecoration(
+                      labelText: 'Para',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            obscureText: true,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Por favor, digite sua senha';
-              }
-              if (value.length < 6) {
-                return 'Senha deve ter pelo menos 6 caracteres';
-              }
-              return null;
-            },
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

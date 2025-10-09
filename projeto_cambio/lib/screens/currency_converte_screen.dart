@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import '../services/current_services.dart';
+import 'package:projeto_cambio/components/ui/currency_box.dart';
+import 'package:projeto_cambio/components/ui/exchange_rates_box.dart';
 
 class CurrencyConverterScreen extends StatefulWidget {
   final Function() onLogout;
 
-  const CurrencyConverterScreen({Key? key, required this.onLogout}) : super(key: key);
+  const CurrencyConverterScreen({Key? key, required this.onLogout})
+      : super(key: key);
 
   @override
-  _CurrencyConverterScreenState createState() => _CurrencyConverterScreenState();
+  _CurrencyConverterScreenState createState() =>
+      _CurrencyConverterScreenState();
 }
 
 class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
   final TextEditingController _amountController = TextEditingController();
   final List<String> currencies = ['USD', 'BRL', 'EUR', 'GBP', 'JPY', 'CAD'];
-  
+
   String _fromCurrency = 'USD';
   String _toCurrency = 'BRL';
   double _convertedAmount = 0.0;
@@ -37,7 +41,6 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
         _exchangeRates = rates;
       });
     } catch (e) {
-      // Usar dados mock em caso de erro
       setState(() {
         _exchangeRates = CurrencyService.getMockRates();
       });
@@ -92,90 +95,29 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
         padding: EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Card de entrada de valor
-            Card(
-              elevation: 4,
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: _amountController,
-                      decoration: InputDecoration(
-                        labelText: 'Valor a converter',
-                        prefixIcon: Icon(Icons.attach_money),
-                        border: OutlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.numberWithOptions(decimal: true),
-                      onChanged: (value) => _convertCurrency(),
-                    ),
-                    SizedBox(height: 20),
-                    
-                    // Seleção de moedas
-                    Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            value: _fromCurrency,
-                            items: currencies.map((String currency) {
-                              return DropdownMenuItem<String>(
-                                value: currency,
-                                child: Text(currency),
-                              );
-                            }).toList(),
-                            onChanged: (String? newValue) {
-                              if (newValue != null) {
-                                setState(() {
-                                  _fromCurrency = newValue;
-                                });
-                                _loadExchangeRates();
-                                _convertCurrency();
-                              }
-                            },
-                            decoration: InputDecoration(
-                              labelText: 'De',
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        IconButton(
-                          icon: Icon(Icons.swap_horiz),
-                          onPressed: _swapCurrencies,
-                          style: IconButton.styleFrom(
-                            backgroundColor: Colors.blue[50],
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            value: _toCurrency,
-                            items: currencies.map((String currency) {
-                              return DropdownMenuItem<String>(
-                                value: currency,
-                                child: Text(currency),
-                              );
-                            }).toList(),
-                            onChanged: (String? newValue) {
-                              if (newValue != null) {
-                                setState(() {
-                                  _toCurrency = newValue;
-                                });
-                                _convertCurrency();
-                              }
-                            },
-                            decoration: InputDecoration(
-                              labelText: 'Para',
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+            // Box de Inserção de Valor e Seleção de Moedas
+            CurrencyBox(
+              amountController: _amountController,
+              currencies: currencies,
+              fromCurrency: _fromCurrency,
+              toCurrency: _toCurrency,
+              onFromCurrencyChanged: (value) {
+                setState(() {
+                  _fromCurrency = value!;
+                });
+                _loadExchangeRates();
+                _convertCurrency();
+              },
+              onToCurrencyChanged: (value) {
+                setState(() {
+                  _toCurrency = value!;
+                });
+                _convertCurrency();
+              },
+              onSwap: _swapCurrencies,
+              onAmountChanged: (_) => _convertCurrency(),
             ),
+
             SizedBox(height: 20),
 
             // Card de resultado
@@ -219,6 +161,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                 ),
               ),
             ),
+
             SizedBox(height: 20),
 
             // Botão de conversão
@@ -237,9 +180,14 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
               ),
             ),
 
-            // Taxas de câmbio atuais
+            SizedBox(height: 20),
+
+            // Lista de taxas de câmbio
             Expanded(
-              child: _buildExchangeRatesList(),
+              child: ExchangeRatesBox(
+                exchangeRates: _exchangeRates,
+                fromCurrency: _fromCurrency,
+              ),
             ),
           ],
         ),
@@ -247,7 +195,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
     );
   }
 
-  Widget _buildExchangeRatesList() {
+ /* Widget _buildExchangeRatesList() {
     if (_isLoading) {
       return Center(child: CircularProgressIndicator());
     }
@@ -291,7 +239,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
         ),
       ],
     );
-  }
+  }*/
 
   @override
   void dispose() {
